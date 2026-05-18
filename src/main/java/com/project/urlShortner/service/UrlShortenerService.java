@@ -2,6 +2,7 @@ package com.project.urlShortner.service;
 
 import com.project.urlShortner.dto.ShortenUrlRequest;
 import com.project.urlShortner.dto.ShortenUrlResponse;
+import com.project.urlShortner.exception.ShortUrlNotFoundException;
 import com.project.urlShortner.model.ShortUrl;
 import com.project.urlShortner.repository.ShortUrlRepository;
 import com.project.urlShortner.util.ShortCodeGenerator;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,9 +18,27 @@ public class UrlShortenerService {
 
     private final ShortUrlRepository shortUrlRepository;
 
-    public ShortenUrlResponse createShortUrl(ShortenUrlRequest request) {
+    public ShortenUrlResponse createShortUrl(
+            ShortenUrlRequest request
+    ) {
 
-        String shortCode = ShortCodeGenerator.generateShortCode();
+        Optional<ShortUrl> existingShortUrl =
+                shortUrlRepository.findByOriginalUrl(
+                        request.getUrl()
+                );
+
+        if (existingShortUrl.isPresent()) {
+
+            return ShortenUrlResponse.builder()
+                    .shortUrl(
+                            "http://localhost:8080/"
+                                    + existingShortUrl.get().getShortCode()
+                    )
+                    .build();
+        }
+
+        String shortCode =
+                ShortCodeGenerator.generateShortCode();
 
         ShortUrl shortUrl = ShortUrl.builder()
                 .originalUrl(request.getUrl())
@@ -30,7 +50,22 @@ public class UrlShortenerService {
         shortUrlRepository.save(shortUrl);
 
         return ShortenUrlResponse.builder()
-                .shortUrl("http://localhost:8080/" + shortCode)
+                .shortUrl(
+                        "http://localhost:8080/" + shortCode
+                )
                 .build();
+    }
+
+    public String getOriginalUrl(String shortCode) {
+
+        ShortUrl shortUrl = shortUrlRepository.findByShortCode(shortCode)
+                .orElseThrow(() ->
+                        new ShortUrlNotFoundException("Short URL not found"));
+
+        shortUrl.setClickCount(shortUrl.getClickCount() + 1);
+
+        shortUrlRepository.save(shortUrl);
+
+        return shortUrl.getOriginalUrl();
     }
 }
