@@ -2,6 +2,7 @@ package com.project.urlShortner.service;
 
 import com.project.urlShortner.dto.ShortenUrlRequest;
 import com.project.urlShortner.dto.ShortenUrlResponse;
+import com.project.urlShortner.exception.CustomAliasAlreadyExistsException;
 import com.project.urlShortner.exception.ShortUrlExpiredException;
 import com.project.urlShortner.exception.ShortUrlNotFoundException;
 import com.project.urlShortner.model.ShortUrl;
@@ -38,8 +39,35 @@ public class UrlShortenerService {
                     .build();
         }
 
-        String shortCode =
-                ShortCodeGenerator.generateShortCode();
+        String shortCode;
+
+        if (
+                request.getCustomAlias() != null
+                        &&
+                        !request.getCustomAlias().isBlank()
+        ) {
+
+            boolean aliasExists =
+                    shortUrlRepository
+                            .findByShortCode(
+                                    request.getCustomAlias()
+                            )
+                            .isPresent();
+
+            if (aliasExists) {
+
+                throw new CustomAliasAlreadyExistsException(
+                        "Custom alias already exists"
+                );
+            }
+
+            shortCode = request.getCustomAlias();
+
+        } else {
+
+            shortCode =
+                    ShortCodeGenerator.generateShortCode();
+        }
 
         ShortUrl shortUrl = ShortUrl.builder()
                 .originalUrl(request.getUrl())

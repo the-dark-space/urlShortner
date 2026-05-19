@@ -61,4 +61,21 @@ public class GlobalExceptionHandler {
                 HttpStatus.GONE
         );
     }
+
+    @ExceptionHandler(CustomAliasAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse>
+    handleCustomAliasAlreadyExists(
+            CustomAliasAlreadyExistsException ex
+    ) {
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .build();
+
+        return new ResponseEntity<>(
+                errorResponse,
+                HttpStatus.CONFLICT
+        );
+    }
 }
