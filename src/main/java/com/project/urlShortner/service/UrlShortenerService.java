@@ -24,21 +24,6 @@ public class UrlShortenerService {
             ShortenUrlRequest request
     ) {
 
-        Optional<ShortUrl> existingShortUrl =
-                shortUrlRepository.findByOriginalUrl(
-                        request.getUrl()
-                );
-
-        if (existingShortUrl.isPresent()) {
-
-            return ShortenUrlResponse.builder()
-                    .shortUrl(
-                            "http://localhost:8080/"
-                                    + existingShortUrl.get().getShortCode()
-                    )
-                    .build();
-        }
-
         String shortCode;
 
         if (
@@ -65,8 +50,16 @@ public class UrlShortenerService {
 
         } else {
 
-            shortCode =
-                    ShortCodeGenerator.generateShortCode();
+            do {
+
+                shortCode =
+                        ShortCodeGenerator.generateShortCode();
+
+            } while (
+                    shortUrlRepository
+                            .findByShortCode(shortCode)
+                            .isPresent()
+            );
         }
 
         ShortUrl shortUrl = ShortUrl.builder()
