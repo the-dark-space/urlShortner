@@ -27,6 +27,9 @@ public class ShortUrl {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
     @Column(name = "click_count")
     private Long clickCount;
 }

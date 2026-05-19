@@ -2,6 +2,7 @@ package com.project.urlShortner.service;
 
 import com.project.urlShortner.dto.ShortenUrlRequest;
 import com.project.urlShortner.dto.ShortenUrlResponse;
+import com.project.urlShortner.exception.ShortUrlExpiredException;
 import com.project.urlShortner.exception.ShortUrlNotFoundException;
 import com.project.urlShortner.model.ShortUrl;
 import com.project.urlShortner.repository.ShortUrlRepository;
@@ -44,6 +45,12 @@ public class UrlShortenerService {
                 .originalUrl(request.getUrl())
                 .shortCode(shortCode)
                 .createdAt(LocalDateTime.now())
+                .expiresAt(
+                        request.getExpiryDays() != null
+                                ? LocalDateTime.now()
+                                .plusDays(request.getExpiryDays())
+                                : null
+                )
                 .clickCount(0L)
                 .build();
 
@@ -61,6 +68,16 @@ public class UrlShortenerService {
         ShortUrl shortUrl = shortUrlRepository.findByShortCode(shortCode)
                 .orElseThrow(() ->
                         new ShortUrlNotFoundException("Short URL not found"));
+
+        if (
+                shortUrl.getExpiresAt() != null
+                        &&
+                        shortUrl.getExpiresAt().isBefore(LocalDateTime.now())
+        ) {
+            throw new ShortUrlExpiredException(
+                    "Short URL has expired"
+            );
+        }
 
         shortUrl.setClickCount(shortUrl.getClickCount() + 1);
 

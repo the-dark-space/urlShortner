@@ -45,4 +45,20 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
+
+    @ExceptionHandler(ShortUrlExpiredException.class)
+    public ResponseEntity<ErrorResponse> handleExpiredUrl(
+            ShortUrlExpiredException ex
+    ) {
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.GONE.value())
+                .message(ex.getMessage())
+                .build();
+
+        return new ResponseEntity<>(
+                errorResponse,
+                HttpStatus.GONE
+        );
+    }
 }

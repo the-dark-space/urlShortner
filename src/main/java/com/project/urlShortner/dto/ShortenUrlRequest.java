@@ -11,4 +11,6 @@ public class ShortenUrlRequest {
 
     @ValidUrl
     private String url;
+
+    private Integer expiryDays;
 }
