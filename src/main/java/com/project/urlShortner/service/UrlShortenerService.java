@@ -1,6 +1,8 @@
 package com.project.urlShortner.service;
 
+import com.project.urlShortner.ai.UrlSafetyAnalyzerService;
 import com.project.urlShortner.cache.RedirectCacheData;
+import com.project.urlShortner.exception.MaliciousUrlException;
 import org.springframework.cache.annotation.Cacheable;
 import com.project.urlShortner.dto.ShortenUrlRequest;
 import com.project.urlShortner.dto.ShortenUrlResponse;
@@ -21,11 +23,21 @@ import java.util.Optional;
 public class UrlShortenerService {
 
     private final ShortUrlRepository shortUrlRepository;
+    private final UrlSafetyAnalyzerService
+            urlSafetyAnalyzerService;
 
     public ShortenUrlResponse createShortUrl(
             ShortenUrlRequest request
     ) {
+        boolean isSafe =
+                urlSafetyAnalyzerService
+                        .isSafeUrl(request.getUrl());
 
+        if (!isSafe) {
+            throw new MaliciousUrlException(
+                    "Potential malicious URL detected"
+            );
+        }
         String shortCode;
 
         if (

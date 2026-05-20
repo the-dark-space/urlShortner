@@ -78,4 +78,22 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT
         );
     }
+
+    @ExceptionHandler(MaliciousUrlException.class)
+    public ResponseEntity<ErrorResponse>
+    handleMaliciousUrlException(
+            MaliciousUrlException ex
+    ) {
+
+        ErrorResponse errorResponse =
+                ErrorResponse.builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .message(ex.getMessage())
+                        .build();
+
+        return new ResponseEntity<>(
+                errorResponse,
+                HttpStatus.BAD_REQUEST
+        );
+    }
 }
