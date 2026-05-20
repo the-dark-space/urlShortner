@@ -1,5 +1,7 @@
 package com.project.urlShortner.service;
 
+import com.project.urlShortner.cache.RedirectCacheData;
+import org.springframework.cache.annotation.Cacheable;
 import com.project.urlShortner.dto.ShortenUrlRequest;
 import com.project.urlShortner.dto.ShortenUrlResponse;
 import com.project.urlShortner.exception.CustomAliasAlreadyExistsException;
@@ -84,26 +86,27 @@ public class UrlShortenerService {
                 .build();
     }
 
-    public String getOriginalUrl(String shortCode) {
 
-        ShortUrl shortUrl = shortUrlRepository.findByShortCode(shortCode)
-                .orElseThrow(() ->
-                        new ShortUrlNotFoundException("Short URL not found"));
+    @Cacheable(value = "originalUrls", key = "#shortCode")
+    public RedirectCacheData getRedirectData(
+            String shortCode
+    ) {
 
-        if (
-                shortUrl.getExpiresAt() != null
-                        &&
-                        shortUrl.getExpiresAt().isBefore(LocalDateTime.now())
-        ) {
-            throw new ShortUrlExpiredException(
-                    "Short URL has expired"
-            );
-        }
+        ShortUrl shortUrl =
+                shortUrlRepository.findByShortCode(shortCode)
+                        .orElseThrow(() ->
+                                new ShortUrlNotFoundException(
+                                        "Short URL not found"
+                                )
+                        );
 
-        shortUrl.setClickCount(shortUrl.getClickCount() + 1);
+        return RedirectCacheData.builder()
+                .originalUrl(shortUrl.getOriginalUrl())
+                .expiresAt(shortUrl.getExpiresAt())
+                .build();
+    }
 
-        shortUrlRepository.save(shortUrl);
-
-        return shortUrl.getOriginalUrl();
+    public void incrementClickCount(String shortCode) {
+        shortUrlRepository.incrementClickCount(shortCode);
     }
 }

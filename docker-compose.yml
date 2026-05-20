@@ -16,6 +16,14 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
+  redis:
+    image: redis:7.2
+
+    container_name: url-shortener-redis
+
+    ports:
+      - "6379:6379"
+
   app:
     build: .
 
@@ -26,6 +34,7 @@ services:
 
     depends_on:
       - mysql
+      - redis
 
     restart: on-failure
 
@@ -33,6 +42,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/url_shortener
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
 
 volumes:
   mysql_data:
