@@ -11,43 +11,61 @@ public class UrlSafetyAnalyzerService {
 
     private final WebClient webClient;
 
-    @Value("${gemini.api.key}")
-    private String geminiApiKey;
+    @Value("${openrouter.api.key}")
+    private String openRouterApiKey;
 
     public boolean isSafeUrl(String url) {
 
         try {
 
             String prompt = """
-                Analyze this URL for phishing,
-                scams, or malicious intent.
+                    Analyze this URL for phishing,
+                    scams, malicious intent,
+                    fake login pages,
+                    banking fraud,
+                    crypto scams,
+                    or suspicious behavior.
 
-                Return ONLY:
-                SAFE
-                or
-                MALICIOUS
+                    Return ONLY:
+                    SAFE
+                    or
+                    MALICIOUS
 
-                URL:
-                """ + url;
+                    URL:
+                    """ + url;
 
             String requestBody = """
-                {
-                  "contents": [{
-                    "parts": [{
-                      "text": "%s"
-                    }]
-                  }]
-                }
-                """.formatted(prompt);
-
+                    {
+                      "model": "openrouter/free",
+                      "messages": [
+                        {
+                          "role": "user",
+                          "content": "%s"
+                        }
+                      ]
+                    }
+                    """.formatted(
+                    prompt.replace("\"", "\\\"")
+            );
             String response = webClient.post()
                     .uri(
-                            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="
-                                    + geminiApiKey
+                            "https://openrouter.ai/api/v1/chat/completions"
+                    )
+                    .header(
+                            "Authorization",
+                            "Bearer " + openRouterApiKey
                     )
                     .header(
                             "Content-Type",
                             "application/json"
+                    )
+                    .header(
+                            "HTTP-Referer",
+                            "http://localhost:8080"
+                    )
+                    .header(
+                            "X-Title",
+                            "Distributed URL Shortener"
                     )
                     .bodyValue(requestBody)
                     .retrieve()
@@ -65,7 +83,27 @@ public class UrlSafetyAnalyzerService {
                             + ex.getMessage()
             );
 
-            return true;
+            String lowerUrl = url.toLowerCase();
+
+            return !(
+                    lowerUrl.contains("login")
+                            ||
+                            lowerUrl.contains("verify")
+                            ||
+                            lowerUrl.contains("bank")
+                            ||
+                            lowerUrl.contains("kyc")
+                            ||
+                            lowerUrl.contains("reward")
+                            ||
+                            lowerUrl.contains("gift")
+                            ||
+                            lowerUrl.contains("crypto")
+                            ||
+                            lowerUrl.contains("wallet")
+                            ||
+                            lowerUrl.contains("upi")
+            );
         }
     }
 }
