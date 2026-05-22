@@ -96,4 +96,27 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
+
+    @ExceptionHandler(
+            RateLimitExceededException.class
+    )
+    public ResponseEntity<ErrorResponse>
+    handleRateLimitExceededException(
+            RateLimitExceededException ex
+    ) {
+
+        ErrorResponse errorResponse =
+                ErrorResponse.builder()
+                        .status(
+                                HttpStatus.TOO_MANY_REQUESTS
+                                        .value()
+                        )
+                        .message(ex.getMessage())
+                        .build();
+
+        return new ResponseEntity<>(
+                errorResponse,
+                HttpStatus.TOO_MANY_REQUESTS
+        );
+    }
 }
