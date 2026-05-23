@@ -119,4 +119,26 @@ public class GlobalExceptionHandler {
                 HttpStatus.TOO_MANY_REQUESTS
         );
     }
+
+    @ExceptionHandler(
+            UnauthorizedUrlAccessException.class
+    )
+    public ResponseEntity<ErrorResponse>
+    handleUnauthorizedUrlAccessException(
+            UnauthorizedUrlAccessException ex
+    ) {
+
+        ErrorResponse errorResponse =
+                ErrorResponse.builder()
+                        .status(
+                                HttpStatus.FORBIDDEN.value()
+                        )
+                        .message(ex.getMessage())
+                        .build();
+
+        return new ResponseEntity<>(
+                errorResponse,
+                HttpStatus.FORBIDDEN
+        );
+    }
 }

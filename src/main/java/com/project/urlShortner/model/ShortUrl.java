@@ -24,6 +24,10 @@ public class ShortUrl {
     @Column(name = "short_code", nullable = false, unique = true)
     private String shortCode;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
