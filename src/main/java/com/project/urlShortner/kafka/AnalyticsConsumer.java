@@ -25,10 +25,21 @@ public class AnalyticsConsumer {
             AnalyticsEvent event
     ) {
 
-        shortUrlRepository
-                .incrementClickCount(
-                        event.getShortCode()
-                );
+        int updatedRows =
+                shortUrlRepository
+                        .incrementClickCount(
+                                event.getShortCode()
+                        );
+
+        if (updatedRows == 0) {
+
+            System.out.println(
+                    "Short URL not found: "
+                            + event.getShortCode()
+            );
+
+            return;
+        }
 
         System.out.println(
                 "Analytics updated for: "

@@ -129,22 +129,6 @@ public class UrlShortenerService {
                 .build();
     }
 
-    public void incrementClickCount(
-            String shortCode
-    ) {
-
-        int updatedRows =
-                shortUrlRepository
-                        .incrementClickCount(shortCode);
-
-        if (updatedRows == 0) {
-
-            throw new ShortUrlNotFoundException(
-                    "Short URL not found"
-            );
-        }
-    }
-
     public List<UrlResponse> getMyUrls() {
 
         String email =
