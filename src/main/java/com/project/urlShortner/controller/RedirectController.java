@@ -2,6 +2,7 @@ package com.project.urlShortner.controller;
 
 import com.project.urlShortner.cache.RedirectCacheData;
 import com.project.urlShortner.exception.ShortUrlExpiredException;
+import com.project.urlShortner.kafka.AnalyticsProducer;
 import com.project.urlShortner.model.ShortUrl;
 import com.project.urlShortner.service.UrlShortenerService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 public class RedirectController {
 
     private final UrlShortenerService urlShortenerService;
+    private final AnalyticsProducer analyticsProducer;
 
     @GetMapping("/{shortCode}")
     public ResponseEntity<Void> redirectToOriginalUrl(
@@ -39,7 +41,7 @@ public class RedirectController {
             );
         }
 
-        urlShortenerService.incrementClickCount(shortCode);
+        analyticsProducer.publishEvent(shortCode);
 
         HttpHeaders headers = new HttpHeaders();
 
