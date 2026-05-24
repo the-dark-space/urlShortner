@@ -4,6 +4,7 @@ import com.project.urlShortner.model.ShortUrl;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -22,5 +23,26 @@ public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
     int incrementClickCount(String shortCode);
     List<ShortUrl> findByUserEmail(
             String email
+    );
+    @Modifying
+    @Transactional
+
+    @Query("""
+
+UPDATE ShortUrl s
+
+SET s.clickCount =
+        s.clickCount + :count
+
+WHERE s.shortCode = :shortCode
+
+""")
+    int incrementClickCountBy(
+
+            @Param("shortCode")
+            String shortCode,
+
+            @Param("count")
+            Long count
     );
 }
