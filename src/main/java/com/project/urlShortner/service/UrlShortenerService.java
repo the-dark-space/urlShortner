@@ -2,9 +2,11 @@ package com.project.urlShortner.service;
 
 import com.project.urlShortner.ai.UrlSafetyAnalyzerService;
 import com.project.urlShortner.cache.RedirectCacheData;
+import com.project.urlShortner.dto.DailyAnalyticsResponse;
 import com.project.urlShortner.dto.UrlResponse;
 import com.project.urlShortner.exception.*;
 import com.project.urlShortner.model.User;
+import com.project.urlShortner.repository.UrlDailyAnalyticsRepository;
 import com.project.urlShortner.repository.UserRepository;
 import com.project.urlShortner.util.AuthUtil;
 import org.springframework.cache.annotation.CacheEvict;
@@ -29,6 +31,7 @@ public class UrlShortenerService {
     private final UrlSafetyAnalyzerService
             urlSafetyAnalyzerService;
     private final UserRepository userRepository;
+    private final UrlDailyAnalyticsRepository urlDailyAnalyticsRepository;
 
     public ShortenUrlResponse createShortUrl(
             ShortenUrlRequest request
@@ -226,4 +229,31 @@ public class UrlShortenerService {
         shortUrlRepository.save(shortUrl);
     }
 
+    public List<DailyAnalyticsResponse>
+    getDailyAnalytics(
+            String shortCode
+    ) {
+
+        validateOwnership(shortCode);
+
+        return urlDailyAnalyticsRepository
+                .findByShortCodeOrderByDateAsc(
+                        shortCode
+                )
+                .stream()
+
+                .map(analytics ->
+
+                        DailyAnalyticsResponse
+                                .builder()
+                                .date(
+                                        analytics.getDate()
+                                )
+                                .clicks(
+                                        analytics.getClicks()
+                                )
+                                .build()
+                )
+                .toList();
+    }
 }

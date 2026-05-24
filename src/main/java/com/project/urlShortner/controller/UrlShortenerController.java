@@ -1,9 +1,6 @@
 package com.project.urlShortner.controller;
 
-import com.project.urlShortner.dto.ShortenUrlRequest;
-import com.project.urlShortner.dto.ShortenUrlResponse;
-import com.project.urlShortner.dto.UpdateExpiryRequest;
-import com.project.urlShortner.dto.UrlResponse;
+import com.project.urlShortner.dto.*;
 import com.project.urlShortner.model.ShortUrl;
 import com.project.urlShortner.service.UrlShortenerService;
 import jakarta.validation.Valid;
@@ -64,6 +61,21 @@ public class UrlShortenerController {
 
         return ResponseEntity.ok(
                 "Expiry updated successfully"
+        );
+    }
+    @GetMapping("/{shortCode}/analytics")
+    public ResponseEntity<
+            List<DailyAnalyticsResponse>
+            > getAnalytics(
+
+            @PathVariable String shortCode
+    ) {
+
+        return ResponseEntity.ok(
+                urlShortenerService
+                        .getDailyAnalytics(
+                                shortCode
+                        )
         );
     }
 }
